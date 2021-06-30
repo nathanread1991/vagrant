@@ -7,7 +7,7 @@ Vagrant.configure("2") do |config|
     app.vm.hostname = "app" 
     app.vm.network "forwarded_port", guest: 8080, host: 8081,
     auto_correct: true, id: "wanderer-app"
-
+    app.vm.provision "shell", path: "scripts/pre.sh"
     app.vm.network "private_network", ip: "10.10.2.4"
   end
    config.vm.define "prom" do |prom|
