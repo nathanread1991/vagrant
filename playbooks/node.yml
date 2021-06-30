@@ -1,0 +1,13 @@
+--- # Install Node.js and NPM
+- hosts: all
+  tasks:
+    - name: install node.js
+      apt:
+        name: nodejs
+        state: latest
+    - name: install npm
+      apt:
+        name: npm
+        state: latest
+
+

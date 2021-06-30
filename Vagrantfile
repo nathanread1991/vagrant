@@ -7,8 +7,12 @@ Vagrant.configure("2") do |config|
     app.vm.hostname = "app" 
     app.vm.network "forwarded_port", guest: 8080, host: 8081,
     auto_correct: true, id: "wanderer-app"
-
     app.vm.network "private_network", ip: "10.10.2.4"
+    app.vm.provision "ansible_local" do |ansible|
+      ansible.playbook = "playbooks/node.yml"
+      ansible.become = true
+      ansible.become_user = "root"
+    end
   end
    config.vm.define "prom" do |prom|
     prom.vm.network "forwarded_port", guest: 9090, host: 9090,
