@@ -1,4 +1,9 @@
 # -*- mode: ruby -*-
+
+$script = <<-SCRIPT
+apt-get install -y nodejs npm
+SCRIPT
+
 Vagrant.configure("2") do |config|
   config.vm.box = "ubuntu/bionic64"
   config.vm.define "app" do |app|
@@ -9,6 +14,9 @@ Vagrant.configure("2") do |config|
     auto_correct: true, id: "wanderer-app"
 
     app.vm.network "private_network", ip: "10.10.2.4"
+    
+    app.vm.provision "shell", inline: "apt-get install -y nodejs npm" 
+
   end
    config.vm.define "prom" do |prom|
     prom.vm.network "forwarded_port", guest: 9090, host: 9090,
@@ -16,6 +24,7 @@ Vagrant.configure("2") do |config|
     prom.vm.hostname = "prom"
 
     prom.vm.network "private_network", ip: "10.10.2.5"
+    prom.vm.provision "shell", inline: $script
   end
 
 
