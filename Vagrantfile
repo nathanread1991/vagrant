@@ -1,79 +1,53 @@
-# -*- mode: ruby -*-
 Vagrant.configure("2") do |config|
-  config.vm.box = "ubuntu/bionic64"
-  config.vm.define "app" do |app|
-    app.vm.synced_folder "app/", "/var/www/app", create: true,
-    group: "vagrant", owner: "vagrant", id: "app"
-    app.vm.hostname = "app" 
-    app.vm.network "forwarded_port", guest: 8080, host: 8081,
-    auto_correct: true, id: "wanderer-app"
+  config.vm.box = "peru/ubuntu-20.04-desktop-amd64"
 
-    app.vm.network "private_network", ip: "10.10.2.4"
-  end
-   config.vm.define "prom" do |prom|
-    prom.vm.network "forwarded_port", guest: 9090, host: 9090,
-    auto_correct: true, id: "prometheus"
-    prom.vm.hostname = "prom"
-
-    prom.vm.network "private_network", ip: "10.10.2.5"
+  config.vm.provider :virtualbox do |v|
+    v.gui = true
+    v.memory = 4000
   end
 
+  # Currently "ubuntu/bionic64" on VirtualBox requires `type: "virtualbox"`
+  # to make synced folder works.
+  config.vm.synced_folder ".", "/vagrant", type: "virtualbox"
 
+  # Add Google Chrome repository
+  config.vm.provision :shell, inline: "wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub|sudo apt-key add -"
+  config.vm.provision :shell, inline: "sudo sh -c 'echo \"deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main\" > /etc/apt/sources.list.d/google.list'"
 
+  # Update repositories
+  config.vm.provision :shell, inline: "sudo apt update -y"
 
+  # Upgrade installed packages
+  config.vm.provision :shell, inline: "sudo apt upgrade -y"
 
+  # Add desktop environment
+  #config.vm.provision :shell, inline: "sudo apt install -y --no-install-recommends ubuntu-desktop"
+  #config.vm.provision :shell, inline: "sudo apt install -y --no-install-recommends virtualbox-guest-dkms virtualbox-guest-utils virtualbox-guest-x11"
+  # Add `vagrant` to Administrator
+  config.vm.provision :shell, inline: "sudo usermod -a -G sudo vagrant"
 
-  # Disable automatic box update checking. If you disable this, then
-  # boxes will only be checked for updates when the user runs
-  # `vagrant box outdated`. This is not recommended.
-  # config.vm.box_check_update = false
+  # Add Google Chrome
+  config.vm.provision :shell, inline: "sudo apt install -y google-chrome-stable"
 
-  # Create a forwarded port mapping which allows access to a specific port
-  # within the machine from a port on the host machine. In the example below,
-  # accessing "localhost:8080" will access port 80 on the guest machine.
-  # NOTE: This will enable public access to the opened port
-  # config.vm.network "forwarded_port", guest: 80, host: 8080
+  # Add Chromium
+  config.vm.provision :shell, inline: "sudo apt install -y chromium-browser"
 
-  # Create a forwarded port mapping which allows access to a specific port
-  # within the machine from a port on the host machine and only allow access
-  # via 127.0.0.1 to disable public access
-  # config.vm.network "forwarded_port", guest: 80, host: 8080, host_ip: "127.0.0.1"
-
-  # Create a private network, which allows host-only access to the machine
-  # using a specific IP.
-  # config.vm.network "private_network", ip: "192.168.33.10"
-
-  # Create a public network, which generally matched to bridged network.
-  # Bridged networks make the machine appear as another physical device on
-  # your network.
-  # config.vm.network "public_network"
-
-  # Share an additional folder to the guest VM. The first argument is
-  # the path on the host to the actual folder. The second argument is
-  # the path on the guest to mount the folder. And the optional third
-  # argument is a set of non-required options.
-  # config.vm.synced_folder "../data", "/vagrant_data"
-
-  # Provider-specific configuration so you can fine-tune various
-  # backing providers for Vagrant. These expose provider-specific options.
-  # Example for VirtualBox:
-  #
-  # config.vm.provider "virtualbox" do |vb|
-  #   # Display the VirtualBox GUI when booting the machine
-  #   vb.gui = true
-  #
-  #   # Customize the amount of memory on the VM:
-  #   vb.memory = "1024"
-  # end
-  #
-  # View the documentation for the provider you are using for more
-  # information on available options.
-
-  # Enable provisioning with a shell script. Additional provisioners such as
-  # Ansible, Chef, Docker, Puppet and Salt are also available. Please see the
-  # documentation for more information about their specific syntax and use.
-  # config.vm.provision "shell", inline: <<-SHELL
-  #   apt-get update
-  #   apt-get install -y apache2
-  # SHELL
+  # Add Firefox
+  config.vm.provision :shell, inline: "sudo apt install -y firefox"
+  
+  config.vm.provision :shell, inline: "sudo ln -s /usr/bin/python3.8 /usr/bin/python"
+  
+  config.vm.provision :shell, inline: "sudo apt install -y python3-pip"
+  
+  config.vm.provision :shell, inline: "sudo add-apt-repository --yes --update ppa:ansible/ansible"
+ 
+  config.vm.provision :shell, inline: "sudo apt install -y ansible"
+  
+  config.vm.provision :shell, inline: "sudo pip3 install \"ansible-lint[core,community,yamllint]\""
+  
+  config.vm.provision :shell, inline: "snap install --classic code"
+  
+  config.vm.provision :shell, inline: "code --install-extension tomaciazek.ansible --user-data-dir=~"
+  
+    
 end
